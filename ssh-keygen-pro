@@ -1,0 +1,119 @@
+#!/bin/bash
+set -euf -o pipefail
+
+##
+# SSH keygen helper script to generate professional-quality keys.
+#
+# Syntax:
+#
+#     ssh-keygen-pro [user_identifier] [system_identifier] [unique_identifier]
+#
+# Example that prompts you step by step:
+#
+#     ssh-keygen-pro
+#
+# The output is four files that are two RSA 4906 keys:
+#
+#   * A key with a passphrase
+#   * A key without a passphrase, suitable for automation
+#
+#
+# ## Details
+#
+# Typical settings:
+#
+#   * The user identifer is your email address e.g. "alice@example.com"
+#   * The system identifier is your host name e.g. "demo.example.com"
+#   * The unique identifer is a ZID e.g. "8af247255f409533f43c14cae2c07b97"
+#
+# Example that uses args:
+#
+#     ssh-keygen-pro alice@example.com demo.example.com 8af247255f409533f43c14cae2c07b97
+#
+# Output file name convention:
+#
+#   * user_identifer=system_identifer=unique_identifer=automation=id_rsa
+#   * user_identifer=system_identifer=unique_identifer=automation=id_rsa.pub
+#   * user_identifer=system_identifer=unique_identifer=passphrase=id_rsa
+#   * user_identifer=system_identifer=unique_identifer=passphrase=id_rsa.pub
+#
+# Output file name examples:
+#
+#   * alice@example.com=demo.example.com=8af247255f409533f43c14cae2c07b97=automation=id_rsa
+#   * alice@example.com=demo.example.com=8af247255f409533f43c14cae2c07b97=automation=id_rsa.pub
+#   * alice@example.com=demo.example.com=8af247255f409533f43c14cae2c07b97=passphrase=id_rsa
+#   * alice@example.com=demo.example.com=8af247255f409533f43c14cae2c07b97=passphrase=id_rsa.pub
+#
+#
+# ## Reasoning
+#
+# SSH options:
+#
+#   * Type: use the RSA algorithm because it's the widest used.
+#   * Bits: use 4096 because it's stronger than default 2048.
+#   * Generate two keys, one for automation and one with a passphrase.
+#
+# Inputs:
+#
+#   * Use the email address, so a user's keys sort together.
+#   * Use the host identifier, so a user's machine keys sort together.
+#   * Generate an ZID, akin to a UUID4 with only letters and numbers.
+#
+# Output file name convention:
+#
+#   * Separate items by using an equal sign, because it's not in email adddresses.
+#
+#
+# ## Tracking
+#
+#   * Command: ssh-keygen-pro
+#   * Version: 3.1.0
+#   * Created: 2015-12-20 or earlier
+#   * Updated: 2018-07-30
+#   * License: GPL
+#   * Contact: Joel Parker Henderson (joel@joelparkerhenderson.com)
+##
+set -euf
+
+## Get the user identifer by using arg or prompt
+if [ "$#" -gt 0 ]; then
+    email="$1"; shift
+else
+    default="example@example.com"
+    printf "User identifier, such as an email addresss?\n"
+    printf "Default: $default\n"
+    read email
+    [ -z "${email}" ] && email="$default"
+fi
+
+## Get the system identifer by using arg or prompt
+if [ "$#" -gt 0 ]; then
+    host="$1"; shift
+else
+    default=$(hostname)
+    printf "System identifier, such as a host name?\n"
+    printf "Default: $default\n"
+    read host
+    [ -z "${host}" ] && host="$default"
+fi
+
+## Get the unique identifer by using arg or prompt
+if [ "$#" -gt -0 ]; then
+    zid="$1"; shift
+else
+    default=$(hexdump -n 16 -v -e '16/1 "%02x" "\n"' /dev/urandom)
+    printf "Unique identifier, such as a ZID?\n"
+    printf "Default: $default\n"
+    read zid
+    [ -z "${zid}" ] && zid="$default"    
+fi
+
+## Generate a key with a passphrase
+naming="$email=$host=$zid=passphrase=id_rsa"
+ssh-keygen -t rsa -b 4096 -C "$naming" -f "$naming" "$@"
+echo $x; echo $x.pub
+
+## Generate a key without a passphrase suitable for automation
+naming="$email=$host=$zid=automation=id_rsa"
+ssh-keygen -t rsa -b 4096 -C "$naming" -f "$naming" -N "" "$@"
+echo $x; echo $x.pub
