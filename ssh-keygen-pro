@@ -111,9 +111,9 @@ fi
 ## Generate a key with a passphrase
 naming="$email=$host=$zid=passphrase=id_rsa"
 ssh-keygen -t rsa -b 4096 -C "$naming" -f "$naming" "$@"
-echo $x; echo $x.pub
+echo $naming; echo $naming.pub
 
 ## Generate a key without a passphrase suitable for automation
 naming="$email=$host=$zid=automation=id_rsa"
 ssh-keygen -t rsa -b 4096 -C "$naming" -f "$naming" -N "" "$@"
-echo $x; echo $x.pub
+echo $naming; echo $naming.pub
