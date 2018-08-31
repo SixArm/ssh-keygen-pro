@@ -17,6 +17,23 @@ The output is four files that are two RSA 4906 keys:
   * A key without a passphrase, suitable for automation
 
 
+## Install
+
+Option 1: download the file to wherever you want, then make it executable.
+
+    cd /usr/local/bin/
+    sudo curl -O https://raw.githubusercontent.com/SixArm/ssh-keygen-pro/master/ssh-keygen-pro
+    sudo chmod +x ssh-keygen-pro
+
+Option 2: clone the repo to anywhere you want, then add it to your path.
+
+    cd /anywhere/you/want
+    git clone https://github.com/SixArm/ssh-keygen-pro
+    export PATH="$PATH:/anywhere/you/want/ssh-keygen-pro"
+
+If you would like to help us by writing a package for any popular package manager, such as apt, yum, brew, etc., we wecome help.
+
+
 ## Details
 
 Typical usage:
