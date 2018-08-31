@@ -83,8 +83,8 @@ Output file name convention:
 ## Tracking
 
   * Command: ssh-keygen-pro
-  * Version: 3.1.0
+  * Version: 3.1.1
   * Created: 2015-12-20 or earlier
-  * Updated: 2018-07-30
+  * Updated: 2018-08-31
   * License: GPL
   * Contact: Joel Parker Henderson (joel@joelparkerhenderson.com)
