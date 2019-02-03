@@ -6,16 +6,23 @@ set -euf -o pipefail
 #
 # Syntax:
 #
-#     ssh-keygen-pro [user_identifier] [system_identifier] [unique_identifier]
+#     ssh-keygen-pro
+#       [user_identifier]
+#       [system_identifier]
+#       [unique_identifier]
+#       [algortihm_identifier]
 #
 # Example that prompts you step by step:
 #
 #     ssh-keygen-pro
 #
-# The output is four files that are two RSA 4906 keys:
+# The output is two keys:
 #
-#   * A key with a passphrase
-#   * A key without a passphrase, suitable for automation
+#   * A new key with a passphrase, suitable for manual use
+#
+#   * A new key without a passphrase, suitable for automation
+#
+# Each key has a public key file and private key file.
 #
 #
 # ## Details
@@ -25,32 +32,33 @@ set -euf -o pipefail
 #   * The user identifer is your email address e.g. "alice@example.com"
 #   * The system identifier is your host name e.g. "demo.example.com"
 #   * The unique identifer is a ZID e.g. "8af247255f409533f43c14cae2c07b97"
+#   * The algorithm identifer is either the default "ed25519" or "rsa".
 #
 # Example that uses args:
 #
-#     ssh-keygen-pro alice@example.com demo.example.com 8af247255f409533f43c14cae2c07b97
+#     ssh-keygen-pro alice@example.com demo.example.com 8af247255f409533f43c14cae2c07b97 ed25519
 #
 # Output file name convention:
 #
-#   * user_identifer=system_identifer=unique_identifer=automation=id_rsa
-#   * user_identifer=system_identifer=unique_identifer=automation=id_rsa.pub
-#   * user_identifer=system_identifer=unique_identifer=passphrase=id_rsa
-#   * user_identifer=system_identifer=unique_identifer=passphrase=id_rsa.pub
+#   * user_identifer=system_identifer=unique_identifer=automation=id_ed25519
+#   * user_identifer=system_identifer=unique_identifer=automation=id_ed25519.pub
+#   * user_identifer=system_identifer=unique_identifer=passphrase=id_ed25519
+#   * user_identifer=system_identifer=unique_identifer=passphrase=id_ed25519.pub
 #
 # Output file name examples:
 #
-#   * alice@example.com=demo.example.com=8af247255f409533f43c14cae2c07b97=automation=id_rsa
-#   * alice@example.com=demo.example.com=8af247255f409533f43c14cae2c07b97=automation=id_rsa.pub
-#   * alice@example.com=demo.example.com=8af247255f409533f43c14cae2c07b97=passphrase=id_rsa
-#   * alice@example.com=demo.example.com=8af247255f409533f43c14cae2c07b97=passphrase=id_rsa.pub
+#   * alice@example.com=demo.example.com=8af247255f409533f43c14cae2c07b97=automation=id_ed25519
+#   * alice@example.com=demo.example.com=8af247255f409533f43c14cae2c07b97=automation=id_ed25519.pub
+#   * alice@example.com=demo.example.com=8af247255f409533f43c14cae2c07b97=passphrase=id_ed25519
+#   * alice@example.com=demo.example.com=8af247255f409533f43c14cae2c07b97=passphrase=id_ed25519.pub
 #
 #
 # ## Reasoning
 #
 # SSH options:
 #
-#   * Type: use the RSA algorithm because it's the widest used.
-#   * Bits: use 4096 because it's stronger than default 2048.
+#   * Type: use the Ed25519 algorithm because it's the most secure.
+#   * Bits: If RSA, then use 4096 bits because it's stronger than default 2048.
 #   * Generate two keys, one for automation and one with a passphrase.
 #
 # Inputs:
@@ -64,12 +72,52 @@ set -euf -o pipefail
 #   * Separate items by using an equal sign, because it's not in email adddresses.
 #
 #
+# ## ssh-keygen args
+#
+# The ssh-keygen args that we use:
+#
+#   * -o : Save the private-key using the new OpenSSH format rather than
+#          the PEM format. This option is implied if you choose "ed25519".
+#
+#   * -a: It’s the numbers of KDF (Key Derivation Function) rounds. Higher
+#         numbers result in slower passphrase verification, increasing the
+#         resistance to brute-force password cracking of the private-key.
+#
+#   * -t: Specifies the type of key to create, such as "ed25519" or "rsa".
+#
+#   * -f: Specify the filename of the generated key file. If you want the
+#         key to be discovered automatically by the SSH agent, then the
+#         key must be stored in your default `~/.ssh` directory.
+#
+#   * -C: An option to specify a comment. It’s purely informational and
+#         can be anything. It usually says who generated the key.
+#
+#
+# ## About Ed25519
+#
+# See https://medium.com/risan/upgrade-your-ssh-key-to-ed25519-c6e8d60d3c54
+#
+# The Ed25519 was introduced on OpenSSH version 6.5. It’s the EdDSA implementation
+# using the Twisted Edwards curve. It uses elliptic curve cryptography that offers
+# better security with faster performance compared to DSA or ECDSA.
+#
+# Today, the RSA is the most widely used public-key algorithm for SSH key.
+# But compared to Ed25519, RSA slower and even considered not safe if it’s
+# generated with the key smaller than 2048-bit length.
+#
+# The Ed25519 public-key is compact. It only contains 68 characters, compared
+# to RSA 3072 that has 544 characters. Generating the key is also almost as fast
+# as the signing process. It’s also fast to perform batch signature verification
+# with Ed25519. It’s built to be collision resilence. Hash-function collision
+# won’t break the system.
+#
+#
 # ## Tracking
 #
 #   * Command: ssh-keygen-pro
-#   * Version: 3.1.1
+#   * Version: 4.0.0
 #   * Created: 2015-12-20 or earlier
-#   * Updated: 2018-08-31
+#   * Updated: 2019-02-03
 #   * License: GPL
 #   * Contact: Joel Parker Henderson (joel@joelparkerhenderson.com)
 ##
@@ -108,12 +156,37 @@ else
     [ -z "${zid}" ] && zid="$default"    
 fi
 
+## Get the algorithm by using arg or prompt
+if [ "$#" -gt -0 ]; then
+    algo="$1"; shift
+else
+    default="ed25519"
+    printf "Algorithm, such as ed25519 or rsa\n"
+    printf "Default: $default\n"
+    read algo
+    [ -z "${algo}" ] && algo="$default"
+fi
+
+case "$algo" in
+    "ed25519")
+	algo_args="-t ed25519 -a 100"
+	;;
+    "rsa")
+	algo_args="-t rsa -b 4096"
+	;;
+    *)
+	printf "Algorithm not recognized: $algo"
+	exit 1
+	;;
+esac
+      
+   
 ## Generate a key with a passphrase
-naming="$email=$host=$zid=passphrase=id_rsa"
-ssh-keygen -t rsa -b 4096 -C "$naming" -f "$naming" "$@"
+naming="$email=$host=$zid=passphrase=id_$algo"
+ssh-keygen $algo_args -C "$naming" -f "$naming" "$@"
 echo $naming; echo $naming.pub
 
 ## Generate a key without a passphrase suitable for automation
-naming="$email=$host=$zid=automation=id_rsa"
-ssh-keygen -t rsa -b 4096 -C "$naming" -f "$naming" -N "" "$@"
+naming="$email=$host=$zid=automation=id_$algo"
+ssh-keygen $algo_args -C "$naming" -f "$naming" -N "" "$@"
 echo $naming; echo $naming.pub

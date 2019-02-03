@@ -11,10 +11,12 @@ Example that prompts you step by step:
 
     ssh-keygen-pro
 
-The output is four files that are two RSA 4906 keys:
+The output is two keys:
 
   * A key with a passphrase
   * A key without a passphrase, suitable for automation
+
+Each key has a public key file and private key file.
 
 
 ## Install
