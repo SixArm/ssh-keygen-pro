@@ -43,32 +43,33 @@ Typical usage:
   * The user identifer is your email address e.g. "alice@example.com"
   * The system identifier is your host name e.g. "demo.example.com"
   * The unique identifer is a ZID e.g. "8af247255f409533f43c14cae2c07b97"
-
+  * The algorithm identifier, either "ed25519" or "rsa".
+  
 Example with args:
 
-    ssh-keygen-pro alice@example.com host.example.com 8af247255f409533f43c14cae2c07b97
+    ssh-keygen-pro alice@example.com host.example.com 8af247255f409533f43c14cae2c07b97 ed25519
 
 Output file naming convention:
 
-  * user_identifer=system_identifer=unique_identifer=automation=id_rsa
-  * user_identifer=system_identifer=unique_identifer=automation=id_rsa.pub
-  * user_identifer=system_identifer=unique_identifer=passphrase=id_rsa
-  * user_identifer=system_identifer=unique_identifer=passphrase=id_rsa.pub
+  * user_identifer=system_identifer=unique_identifer=automation=id_ed25519
+  * user_identifer=system_identifer=unique_identifer=automation=id_ed25519.pub
+  * user_identifer=system_identifer=unique_identifer=passphrase=id_ed25519
+  * user_identifer=system_identifer=unique_identifer=passphrase=id_ed25519.pub
 
 Output file examples:
 
-  * alice@example.com=host.example.com=8af247255f409533f43c14cae2c07b97=automation=id_rsa
-  * alice@example.com=host.example.com=8af247255f409533f43c14cae2c07b97=automation=id_rsa.pub
-  * alice@example.com=host.example.com=8af247255f409533f43c14cae2c07b97=passphrase=id_rsa
-  * alice@example.com=host.example.com=8af247255f409533f43c14cae2c07b97=passphrase=id_rsa.pub
+  * alice@example.com=host.example.com=8af247255f409533f43c14cae2c07b97=automation=id_ed25519
+  * alice@example.com=host.example.com=8af247255f409533f43c14cae2c07b97=automation=id_ed25519.pub
+  * alice@example.com=host.example.com=8af247255f409533f43c14cae2c07b97=passphrase=id_ed25519
+  * alice@example.com=host.example.com=8af247255f409533f43c14cae2c07b97=passphrase=id_ed25519.pub
 
 
 ## Reasoning
 
 SSH options:
 
-  * Type: use the RSA algorithm because it's the widest used.
-  * Bits: use 4096 because it's stronger than default 2048.
+  * Type: use the Ed25519 algorithm because it's the most secure.
+  * Bits: If RSA, then use 4096 bits because it's stronger than default 2048.
   * Generate two keys, one for automation and one with a passphrase.
   
 Inputs:
@@ -85,8 +86,8 @@ Output file name convention:
 ## Tracking
 
   * Command: ssh-keygen-pro
-  * Version: 3.1.1
+  * Version: 4.0.0
   * Created: 2015-12-20 or earlier
-  * Updated: 2018-08-31
+  * Updated: 2019-02-03
   * License: GPL
   * Contact: Joel Parker Henderson (joel@joelparkerhenderson.com)
