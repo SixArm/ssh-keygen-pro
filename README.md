@@ -4,12 +4,19 @@ SSH keygen helper script to generate professional-quality keys.
 
 Syntax:
 
-   ssh-keygen-pro [user_identifier] [system_identifier] [unique_identifier]
-
+```sh
+ssh-keygen-pro
+    [user_identifier]
+    [system_identifier]
+    [unique_identifier]
+    [algortihm_identifier]
+```
 
 Example that prompts you step by step:
 
-    ssh-keygen-pro
+```sh
+ssh-keygen-pro
+```
 
 The output is two keys:
 
@@ -23,15 +30,19 @@ Each key has a public key file and private key file.
 
 Option 1: download the file to wherever you want, then make it executable.
 
-    cd /usr/local/bin/
-    sudo curl -O https://raw.githubusercontent.com/SixArm/ssh-keygen-pro/master/ssh-keygen-pro
-    sudo chmod +x ssh-keygen-pro
+```sh
+cd /usr/local/bin/
+sudo curl -O https://raw.githubusercontent.com/SixArm/ssh-keygen-pro/master/ssh-keygen-pro
+sudo chmod +x ssh-keygen-pro
+```
 
 Option 2: clone the repo to anywhere you want, then add it to your path.
 
-    cd /anywhere/you/want
-    git clone https://github.com/SixArm/ssh-keygen-pro
-    export PATH="$PATH:/anywhere/you/want/ssh-keygen-pro"
+```sh
+cd /anywhere/you/want
+git clone https://github.com/SixArm/ssh-keygen-pro
+export PATH="$PATH:/anywhere/you/want/ssh-keygen-pro"
+```
 
 If you would like to help us by writing a package for any popular package manager, such as apt, yum, brew, etc., we wecome help.
 
