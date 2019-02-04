@@ -12,19 +12,27 @@ ssh-keygen-pro
     [algortihm_identifier]
 ```
 
-Example that prompts you step by step:
+Example that prompts you:
 
 ```sh
 ssh-keygen-pro
 ```
 
-The output is two keys:
+Example that uses args:
+
+```sh
+ssh-keygen-pro alice@example.com host.example.com 8af247255f409533f43c14cae2c07b97 ed25519
+```
+
+The output is 4 files:
 
   * A key with a passphrase
+    * A public key file
+    * A private key file
   * A key without a passphrase, suitable for automation
-
-Each key has a public key file and private key file.
-
+    * A public key file
+    * A private key file
+  
 
 ## Install
 
