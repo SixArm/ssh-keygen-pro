@@ -9,7 +9,7 @@ ssh-keygen-pro
     [user_identifier]
     [system_identifier]
     [unique_identifier]
-    [algortihm_identifier]
+    [algorithm_identifier]
 ```
 
 Example that prompts you:
