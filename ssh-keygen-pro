@@ -8,19 +8,30 @@ set -euf -o pipefail
 #
 #     ssh-keygen-pro
 #       [user_identifier]
-#       [system_identifier]
 #       [unique_identifier]
 #       [algortihm_identifier]
 #
-# Example that prompts you step by step:
+# Example using prompts:
 #
 #     ssh-keygen-pro
+#
+# Example using option of user identifier:
+#
+#     ssh-keygen-pro alice@exmaple.com ce8382f1cf6fddd5d4615a614c946006 
+#
+# Example using option of unique identifier:
+#
+#     ssh-keygen-pro alice@exmaple.com ce8382f1cf6fddd5d4615a614c946006 
+#
+# Example using option of RSA algorithm:
+#
+#     ssh-keygen-pro alice@exmaple.com ce8382f1cf6fddd5d4615a614c946006 rsa
 #
 # The output is two keys:
 #
 #   * A new key with a passphrase, suitable for manual use
 #
-#   * A new key without a passphrase, suitable for automation
+#   * A new key without a passphrase, suitable for automation use
 #
 # Each key has a public key file and private key file.
 #
@@ -30,42 +41,51 @@ set -euf -o pipefail
 # Typical settings:
 #
 #   * The user identifer is your email address e.g. "alice@example.com"
-#   * The system identifier is your host name e.g. "demo.example.com"
+#
 #   * The unique identifer is a ZID e.g. "8af247255f409533f43c14cae2c07b97"
+#
 #   * The algorithm identifer is either the default "ed25519" or "rsa".
-#
-# Example that uses args:
-#
-#     ssh-keygen-pro alice@example.com demo.example.com 8af247255f409533f43c14cae2c07b97 ed25519
 #
 # Output file name convention:
 #
-#   * user_identifer=system_identifer=unique_identifer=automation=id_ed25519
-#   * user_identifer=system_identifer=unique_identifer=automation=id_ed25519.pub
-#   * user_identifer=system_identifer=unique_identifer=passphrase=id_ed25519
-#   * user_identifer=system_identifer=unique_identifer=passphrase=id_ed25519.pub
+#   * user=unique=ssh-id-ed25519-with-automation
+#
+#   * user=unique=ssh-id-ed25519-with-automation.pub
+#
+#   * user=unique=ssh-id-ed25519-with-passphrase
+#
+#   * user=unique=ssh-id-ed25519-with-passphrase.pub
 #
 # Output file name examples:
 #
-#   * alice@example.com=demo.example.com=8af247255f409533f43c14cae2c07b97=automation=id_ed25519
-#   * alice@example.com=demo.example.com=8af247255f409533f43c14cae2c07b97=automation=id_ed25519.pub
-#   * alice@example.com=demo.example.com=8af247255f409533f43c14cae2c07b97=passphrase=id_ed25519
-#   * alice@example.com=demo.example.com=8af247255f409533f43c14cae2c07b97=passphrase=id_ed25519.pub
+#   * alice@example.com=8af247255f409533f43c14cae2c07b97ssh-id-ed25519-with-automation
+#
+#   * alice@example.com=8af247255f409533f43c14cae2c07b97ssh-id-ed25519-with-automation.pub
+#
+#   * alice@example.com=8af247255f409533f43c14cae2c07b97ssh-id-ed25519-with-passphrase
+#
+#   * alice@example.com=8af247255f409533f43c14cae2c07b97ssh-id-ed25519-with-passphrase.pub
 #
 #
 # ## Reasoning
 #
 # SSH options:
 #
-#   * Type: use the Ed25519 algorithm because it's the most secure.
+#   * Type: prefer the Ed25519 algorithm because it's the most secure,
+#     and also allow the RSA algorithm because it's necessary for some
+#     purposes such as connecting to Amazon Web Services key pairs.
+#
 #   * Bits: If RSA, then use 4096 bits because it's stronger than default 2048.
-#   * Generate two keys, one for automation and one with a passphrase.
+#
+#   * Generate two keys: one with automation (i.e. without a passphrase)
+#     and one with passphrase.
 #
 # Inputs:
 #
-#   * Use the email address, so a user's keys sort together.
-#   * Use the host identifier, so a user's machine keys sort together.
-#   * Generate an ZID, akin to a UUID4 with only letters and numbers.
+#   * Use the user identifier (typically an email address), 
+#     so a user's files will sort together alphabetically.
+#
+#   * Generate an ZID, akin to a UUID4, with only lowercase hex characters.
 #
 # Output file name convention:
 #
@@ -115,9 +135,9 @@ set -euf -o pipefail
 # ## Tracking
 #
 #   * Command: ssh-keygen-pro
-#   * Version: 4.0.0
+#   * Version: 5.0.0
 #   * Created: 2015-12-20 or earlier
-#   * Updated: 2019-02-03
+#   * Updated: 2020-03-26
 #   * License: GPL
 #   * Contact: Joel Parker Henderson (joel@joelparkerhenderson.com)
 ##
@@ -132,17 +152,6 @@ else
     printf "Default: $default\n"
     read email
     [ -z "${email}" ] && email="$default"
-fi
-
-## Get the system identifer by using arg or prompt
-if [ "$#" -gt 0 ]; then
-    host="$1"; shift
-else
-    default=$(hostname)
-    printf "System identifier, such as a host name?\n"
-    printf "Default: $default\n"
-    read host
-    [ -z "${host}" ] && host="$default"
 fi
 
 ## Get the unique identifer by using arg or prompt
@@ -182,11 +191,11 @@ esac
       
    
 ## Generate a key with a passphrase
-naming="$email=$host=$zid=passphrase=id_$algo"
+naming="$email=$zid=ssh-$algo-with-passphrase"
 ssh-keygen $algo_args -C "$naming" -f "$naming" "$@"
 echo $naming; echo $naming.pub
 
 ## Generate a key without a passphrase suitable for automation
-naming="$email=$host=$zid=automation=id_$algo"
+naming="$email=$zid=ssh-$algo-with-automation"
 ssh-keygen $algo_args -C "$naming" -f "$naming" -N "" "$@"
 echo $naming; echo $naming.pub
